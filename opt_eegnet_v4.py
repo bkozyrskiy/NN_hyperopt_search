@@ -1,5 +1,4 @@
 from hyperopt import hp, tpe, fmin, Trials,STATUS_OK
-
 import numpy as np
 from mne.filter import resample
 from tensorflow.keras.utils import to_categorical
@@ -10,15 +9,19 @@ from models import EEGNet
 from utils import save_results
 import os
 import sys
-sys.path.append(os.path.join(os.path.split(os.getcwd())[0],'data_loader'))
-
-from data import DataBuildClassifier,EEG_SAMPLE_RATE
 from hyperparam_opt import crossvalidate,test_ensamble,test_naive, run_a_trial
-from utils import get_subj_split
+from utils import get_subj_split,read_conifig
+
+config = read_conifig()
+DATA_LOADER_PATH = config['data_loader_path']
+DATA_FOLDER = config['data_folder']
+sys.path.append(DATA_LOADER_PATH)
+from data import DataBuildClassifier,EEG_SAMPLE_RATE
 
 RESULTS_DIR = "results_eegnet_v4/"
 WEIGHTS_DIR = "weights_eegnet_v4/"
 K.set_image_data_format("channels_first")
+
 
 space ={'resample_to' : hp.choice('resample_to', range(64,501)),
         'dropoutRate1': hp.uniform('dropoutRate0',0,1),
@@ -90,7 +93,7 @@ if __name__ == '__main__':
 
     if not os.path.exists(WEIGHTS_DIR):
         os.makedirs(WEIGHTS_DIR)
-    data = DataBuildClassifier('/home/likan_blk/BCI/NewData')
+    data = DataBuildClassifier('%s/NewData' %DATA_FOLDER)
     subjects, subj_tr_val_ind, subj_tst_ind = get_subj_split(data, subj_numbers = [25, 26, 27, 28, 29, 30, 32, 33, 34, 35, 36, 37, 38])
     # split_subj = lambda x, ind: {key: (x[key][0][ind[key]], x[key][1][ind[key]]) for key in x}
     # subj_train_val = split_subj(subjects,subj_tr_val_ind)

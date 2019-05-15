@@ -9,6 +9,10 @@ from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import operator
 
+def read_conifig():
+    with open('config.json') as f:
+        config = json.load()
+    return config
 
 def save_json_result(res_dir,params):
     """Save json to a directory and a filename."""
