@@ -29,7 +29,7 @@ space ={'resample_to' : hp.choice('resample_to', range(64,501)),
         'F1': hp.choice('F1',range(4,13)),
         'D': hp.choice('D',range(1,4)),
         'norm_rate': hp.uniform('norm_rate',0.25,1.0),
-        'time_filter_lenght': hp.choice('time_filter_lenght',np.arange(100,301,10)), #in milliseconds
+        'time_filter_lenght': hp.choice('time_filter_lenght',range(100,301,10)), #in milliseconds
         'lr' : hp.loguniform('lr', -6*np.log(10), -3*np.log(10))
 }
 
