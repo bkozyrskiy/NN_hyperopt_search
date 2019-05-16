@@ -6,12 +6,14 @@ import os
 import pickle
 from tensorflow.keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
+import matplotlib
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import operator
 
 def read_conifig():
     with open('config.json') as f:
-        config = json.load()
+        config = json.load(f)
     return config
 
 def save_json_result(res_dir,params):
