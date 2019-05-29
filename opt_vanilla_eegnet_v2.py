@@ -5,32 +5,46 @@ from mne.filter import resample
 from keras.utils import to_categorical
 import keras.backend as K
 import uuid
-from old_models import EEGNet_old
-from utils import save_results
+from my_models import EEGNet_old
+from utils import save_results,read_conifig
 import os
 import sys
-sys.path.append(os.path.join(os.path.split(os.getcwd())[0],'data_loader'))
+config = read_conifig()
+DATA_LOADER_PATH = config['data_loader_path']
+DATA_FOLDER = config['data_folder']
+sys.path.append(DATA_LOADER_PATH)
 
 from data import DataBuildClassifier,EEG_SAMPLE_RATE
-from hyperparam_opt import crossvalidate,test_ensamble,test_naive, run_a_trial
+from crossvalidate import crossvalidate,test_ensamble,test_naive
 from utils import get_subj_split
-
-RESULTS_DIR = "results/"
-WEIGHTS_DIR = "weights/"
+from optimizers import run_gp,run_a_trial_hp
 
 
-space ={'resample_to' : hp.choice('resample_to', range(128,501)),
+RESULTS_DIR = "results_eegnet_v2/"
+WEIGHTS_DIR = "weights_eegnet_v2/"
+K.set_image_data_format("channels_first")
+
+
+hp_space = {'resample_to' : hp.choice('resample_to', range(128,501)),
         'regRate': hp.loguniform('regRate', -6*np.log(10), -3*np.log(10)),
-        'dropoutRate0': hp.uniform('dropoutRate0',0,1),
-        'dropoutRate1': hp.uniform('dropoutRate1',0,1),
-        'dropoutRate2': hp.uniform('dropoutRate2',0,1),
+        'dropoutRate1': hp.uniform('dropoutRate0',0,1),
+        'dropoutRate2': hp.uniform('dropoutRate1',0,1),
+        'dropoutRate3': hp.uniform('dropoutRate2',0,1),
         'filtNumLayer1': hp.choice('filtNumLayer1',[4,8,16,24,32]),
         'filtNumLayer2': hp.choice('filtNumLayer2',[4,8,16,24,32]),
         'filtNumLayer3': hp.choice('filtNumLayer3',[4,8,16,24,32]),
         'lr' : hp.loguniform('lr', -6*np.log(10), -3*np.log(10))
 }
 
-
+gp_space = [{'name':'resample_to','type':'discrete', 'domain': (128,501)},
+            {'name':'regRate','type':'continuous', 'domain':(1e-6,1e-3)},
+            {'name':'dropoutRate1','type':'continuous', 'domain':(0,1)},
+            {'name':'dropoutRate2','type':'continuous', 'domain':(0,1)},
+            {'name':'dropoutRate3','type':'continuous', 'domain':(0,1)},
+            {'name':'filtNumLayer1','type':'discrete', 'domain':(4,8,16,24,32)},
+            {'name':'filtNumLayer2','type':'discrete', 'domain':(4,8,16,24,32)},
+            {'name':'filtNumLayer3','type':'discrete', 'domain':(4,8,16,24,32)},
+            {'name':'lr','type':'continuous', 'domain':(1e-6,1e-3)}]
 
 
 
@@ -51,10 +65,10 @@ def build_and_train_all_subjects(params,subjects,subj_tr_val_ind,subj_tst_ind):
 
         model_path = os.path.join(tmp_weights_res_path,str(subj))
 
-        model = EEGNet_old(params, Chans=x_tr_val.shape[2], Samples=x_tr_val.shape[1])
+        model = EEGNet_old(2,params, Chans=x_tr_val.shape[2], Samples=x_tr_val.shape[1])
         x_tr_val = x_tr_val.transpose(0, 2, 1)[:,np.newaxis,:,:]
         x_tst = x_tst.transpose(0, 2, 1)[:, np.newaxis, :, :]
-        val_aucs, val_aucs_epochs,_  = crossvalidate(x_tr_val, y_tr_val, model, model_path,epochs=200)
+        val_aucs, val_aucs_epochs,_  = crossvalidate(x_tr_val, y_tr_val, model, model_path,epochs=config['epochs'])
 
         test_auc_ensemble = test_ensamble(x_tst,y_tst,model_path)
         test_naive_history = test_naive(x_tr_val, y_tr_val, x_tst, y_tst, model, int(np.mean(val_aucs_epochs)), model_path)
@@ -92,5 +106,6 @@ if __name__ == '__main__':
     # split_subj = lambda x, ind: {key: (x[key][0][ind[key]], x[key][1][ind[key]]) for key in x}
     # subj_train_val = split_subj(subjects,subj_tr_val_ind)
     # subj_test = split_subj(subjects, subj_tst_ind)
-    for t in range(2):
-        run_a_trial(subjects, subj_tr_val_ind, subj_tst_ind, RESULTS_DIR, build_and_train_all_subjects, space)
+    # for t in range(2):
+    #     run_a_trial(subjects, subj_tr_val_ind, subj_tst_ind, RESULTS_DIR, build_and_train_all_subjects, hp_space)
+    run_gp(subjects, subj_tr_val_ind, subj_tst_ind, build_and_train_all_subjects, gp_space, noise_var=0.05, max_iter=config['runs'])

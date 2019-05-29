@@ -9,8 +9,9 @@ from models import EEGNet
 from utils import save_results
 import os
 import sys
-from hyperparam_opt import crossvalidate,test_ensamble,test_naive, run_a_trial
+from crossvalidate import crossvalidate,test_ensamble,test_naive, run_a_trial
 from utils import get_subj_split,read_conifig
+from optimizers import run_gp
 
 config = read_conifig()
 DATA_LOADER_PATH = config['data_loader_path']
@@ -23,13 +24,13 @@ WEIGHTS_DIR = "weights_eegnet_v4/"
 K.set_image_data_format("channels_first")
 
 
-space ={'resample_to' : hp.choice('resample_to', range(64,501)),
+space ={'resample_to' : hp.choice('resample_to', range(64,65)),
         'dropoutRate1': hp.uniform('dropoutRate0',0,1),
         'dropoutRate2': hp.uniform('dropoutRate1',0,1),
         'F1': hp.choice('F1',range(4,13)),
         'D': hp.choice('D',range(1,4)),
         'norm_rate': hp.uniform('norm_rate',0.25,1.0),
-        'time_filter_lenght': hp.choice('time_filter_lenght',range(100,301,10)), #in milliseconds
+        'time_filter_lenght': hp.choice('time_filter_lenght',range(100,101)), #in milliseconds
         'lr' : hp.loguniform('lr', -6*np.log(10), -3*np.log(10))
 }
 

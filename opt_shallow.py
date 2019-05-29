@@ -3,12 +3,12 @@ from hyperopt import hp, STATUS_OK
 
 import numpy as np
 from mne.filter import resample
-from hyperparam_opt import crossvalidate,test_ensamble,test_naive, run_a_trial
+from crossvalidate import crossvalidate,test_ensamble,test_naive, run_a_trial
 from keras.utils import to_categorical
 import keras.backend as K
 import uuid
 from utils import save_results,get_subj_split
-from old_models import ShallowConvNet
+from my_models import ShallowConvNet
 import os
 import sys
 sys.path.append(os.path.join(os.path.split(os.getcwd())[0],'data_loader'))

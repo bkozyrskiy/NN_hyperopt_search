@@ -5,21 +5,13 @@ import numpy as np
 from sklearn.metrics import roc_auc_score
 from tensorflow.keras.models import load_model
 from utils import single_auc_loging
-import pickle
-from hyperopt import hp, tpe, fmin, Trials
-from functools import partial
-
 
 
 def crossvalidate(x_train_val, y_train_val, model, model_path,epochs):
     path_to_clean_weights = os.path.join(model_path,'tmp.h5')
     os.makedirs(model_path)
     model.save_weights(path_to_clean_weights)  # Nasty hack. This weights will be used to reset model
-
-
     folds = 4  # To preserve split as 0.6 0.2 0.2
-
-
     cv = StratifiedKFold(n_splits=folds, shuffle=True)
     best_val_epochs = []
     best_val_aucs = []
@@ -79,38 +71,7 @@ def test_naive(x_train_val, y_train_val,x_tst,y_tst,model,num_epochs,model_path)
     return test_history.history
 
 
-def run_a_trial(subjects, subj_tr_val_ind, subj_tst_ind, results_dir, f_to_optimize, space):
-    """Run one TPE meta optimisation step and save its results."""
-    max_evals = nb_evals = 1
-    trials_path = os.path.join(results_dir,"trials.pkl")
-    print("Attempt to resume a past training if it exists:")
-    try:
-        # https://github.com/hyperopt/hyperopt/issues/267
-        trials = pickle.load(open(trials_path, "rb"))
-        print("Found saved Trials! Loading...")
-        max_evals = len(trials.trials) + nb_evals
-        print("Rerunning from {} trials to add another one.".format(
-            len(trials.trials)))
-    except:
-        trials = Trials()
-        print("Starting from scratch: new trials.")
 
-    function_to_opt = partial(
-        f_to_optimize,
-        subjects=subjects,
-        subj_tr_val_ind = subj_tr_val_ind,
-        subj_tst_ind = subj_tst_ind)
-    best = fmin(
-        function_to_opt,
-        space,
-        algo=tpe.suggest,
-        trials=trials,
-        max_evals=max_evals
-    )
-    pickle.dump(trials, open(trials_path, "wb"))
-
-    print("\nOPTIMIZATION STEP COMPLETE.\n")
-    return best
 
 
 
