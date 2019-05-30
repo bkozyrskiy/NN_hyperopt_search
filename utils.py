@@ -10,6 +10,7 @@ import matplotlib
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import operator
+import shutil
 
 def read_conifig():
     with open('config.json') as f:
@@ -118,3 +119,18 @@ def single_auc_loging(history,title,path_to_save):
     plt.close()
     with open('%s/%s.pkl' % (path_to_save,title), 'wb') as output:
         pickle.dump(history,output,pickle.HIGHEST_PROTOCOL)
+
+
+def clear_res_weight_dir(res_dir,weights_dir):
+    """Function remove all dirs except the best by first value in dir name (VAL AUC value)"""
+    res_run_dirs = os.listdir(res_dir)
+    max_val_auc = 0
+    best_dir = None
+    for dir_name in res_run_dirs:
+        val_auc = float(dir_name.split('_')[0])
+        if val_auc > max_val_auc:
+            best_dir = dir_name
+    for dir in res_run_dirs:
+        if dir != best_dir:
+            shutil.rmtree(os.path.join(res_dir,dir))
+            shutil.rmtree(os.path.join(weights_dir, dir))

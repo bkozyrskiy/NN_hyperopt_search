@@ -41,11 +41,13 @@ def run_a_trial_hp(subjects, subj_tr_val_ind, subj_tst_ind, results_dir, f_to_op
 
 def run_gp(subjects, subj_tr_val_ind, subj_tst_ind, f_to_optimize, space, noise_var,max_iter):
     def f2opt_wrapper(params):
-        '''Used to transform nparray to dict'''
+        '''Used to wrap optimized function,written for hyperopt to work with GP, converts hyperopt inputs to gp format
+        and hp outputs to gp format'''
         params_dict = {}
         for elem_idx, elem in enumerate(space):
             params_dict[elem['name']] = params[0,elem_idx]
-        return f_to_optimize(params_dict,subjects=subjects, subj_tr_val_ind=subj_tr_val_ind, subj_tst_ind=subj_tst_ind)
+        res_dict = f_to_optimize(params_dict,subjects=subjects, subj_tr_val_ind=subj_tr_val_ind, subj_tst_ind=subj_tst_ind)
+        return -res_dict['loss']
 
     kernel = GPy.kern.Matern52(input_dim=1, variance=1.0, lengthscale=1.0)
     optimizer = BayesianOptimization(f=f2opt_wrapper,

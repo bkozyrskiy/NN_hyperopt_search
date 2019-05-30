@@ -6,7 +6,7 @@ from keras.utils import to_categorical
 import keras.backend as K
 import uuid
 from my_models import EEGNet_old
-from utils import save_results,read_conifig
+from utils import save_results,read_conifig,clear_res_weight_dir
 import os
 import sys
 config = read_conifig()
@@ -20,8 +20,8 @@ from utils import get_subj_split
 from optimizers import run_gp,run_a_trial_hp
 
 
-RESULTS_DIR = "results_eegnet_v2/"
-WEIGHTS_DIR = "weights_eegnet_v2/"
+RESULTS_DIR = "results_eegnet_v2_%s/" %config['opt_method']
+WEIGHTS_DIR = "weights_eegnet_v2_%s/" %config['opt_method']
 K.set_image_data_format("channels_first")
 
 
@@ -54,7 +54,7 @@ def build_and_train_all_subjects(params,subjects,subj_tr_val_ind,subj_tst_ind):
     subj_val_aucs,subj_tst_aucs_ens,subj_tst_aucs_naive = {},{},{}
     tmp_weights_res_path = os.path.join(WEIGHTS_DIR,params_uuid)
     # for subj in subjects.keys():
-    for subj in [25,26]:
+    for subj in config['subjects']:
         K.clear_session()
         tr_val_ind = subj_tr_val_ind[subj]
         tst_ind = subj_tst_ind[subj]
@@ -108,6 +108,9 @@ if __name__ == '__main__':
     # split_subj = lambda x, ind: {key: (x[key][0][ind[key]], x[key][1][ind[key]]) for key in x}
     # subj_train_val = split_subj(subjects,subj_tr_val_ind)
     # subj_test = split_subj(subjects, subj_tst_ind)
-    # for t in range(2):
-    #     run_a_trial(subjects, subj_tr_val_ind, subj_tst_ind, RESULTS_DIR, build_and_train_all_subjects, hp_space)
-    run_gp(subjects, subj_tr_val_ind, subj_tst_ind, build_and_train_all_subjects, gp_space, noise_var=0.05, max_iter=config['runs'])
+    if config['opt_method'] == 'hyperopt':
+        for t in range(config['runs']):
+            run_a_trial_hp(subjects, subj_tr_val_ind, subj_tst_ind, RESULTS_DIR, build_and_train_all_subjects, hp_space)
+    if config['opt_method'] == 'gpyopt':
+        clear_res_weight_dir(RESULTS_DIR, WEIGHTS_DIR)
+        run_gp(subjects, subj_tr_val_ind, subj_tst_ind, build_and_train_all_subjects, gp_space, noise_var=0.05, max_iter=config['runs'])
