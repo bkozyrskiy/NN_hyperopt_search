@@ -49,6 +49,7 @@ gp_space = [{'name':'resample_to','type':'discrete', 'domain': (128,501)},
 
 
 def build_and_train_all_subjects(params,subjects,subj_tr_val_ind,subj_tst_ind):
+    print(params)
     params_uuid = str(uuid.uuid4())[:5]
     subj_val_aucs,subj_tst_aucs_ens,subj_tst_aucs_naive = {},{},{}
     tmp_weights_res_path = os.path.join(WEIGHTS_DIR,params_uuid)
@@ -101,7 +102,8 @@ if __name__ == '__main__':
 
     if not os.path.exists(WEIGHTS_DIR):
         os.makedirs(WEIGHTS_DIR)
-    data = DataBuildClassifier('/home/likan_blk/BCI/NewData')
+    data = DataBuildClassifier('%s/NewData' %DATA_FOLDER)
+
     subjects, subj_tr_val_ind, subj_tst_ind = get_subj_split(data, subj_numbers = [25, 26, 27, 28, 29, 30, 32, 33, 34, 35, 36, 37, 38])
     # split_subj = lambda x, ind: {key: (x[key][0][ind[key]], x[key][1][ind[key]]) for key in x}
     # subj_train_val = split_subj(subjects,subj_tr_val_ind)

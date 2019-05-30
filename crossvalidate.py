@@ -3,7 +3,7 @@ from sklearn.model_selection import StratifiedKFold
 from my_callbacks import AucMetricHistory
 import numpy as np
 from sklearn.metrics import roc_auc_score
-from tensorflow.keras.models import load_model
+from keras.models import load_model
 from utils import single_auc_loging
 
 
