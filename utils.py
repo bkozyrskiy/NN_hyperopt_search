@@ -11,9 +11,14 @@ matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import operator
 import shutil
+import sys
+
 
 def read_conifig():
-    with open('config.json') as f:
+    config = 'config.json'
+    if len(sys.argv) == 2:
+        config = sys.argv[1]
+    with open(config) as f:
         config = json.load(f)
     return config
 
