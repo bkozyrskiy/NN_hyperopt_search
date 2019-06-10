@@ -16,7 +16,7 @@ sys.path.append(DATA_LOADER_PATH)
 
 from data import DataBuildClassifier,EEG_SAMPLE_RATE
 from crossvalidate import crossvalidate,test_ensamble,test_naive
-from utils import get_subj_split
+from utils import get_subj_split,set_seed
 from optimizers import run_gp,run_a_trial_hp
 
 
@@ -97,6 +97,7 @@ def build_and_train_all_subjects(params,subjects,subj_tr_val_ind,subj_tst_ind):
     return result
 
 if __name__ == '__main__':
+    set_seed(0)
     if not os.path.exists(RESULTS_DIR):
         os.makedirs(RESULTS_DIR)
 

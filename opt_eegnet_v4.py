@@ -10,7 +10,7 @@ from utils import save_results
 import os
 import sys
 from crossvalidate import crossvalidate,test_ensamble,test_naive, run_a_trial
-from utils import get_subj_split,read_conifig
+from utils import get_subj_split,read_conifig,set_seed
 from optimizers import run_gp
 
 config = read_conifig()
@@ -89,6 +89,7 @@ def build_and_train_all_subjects(params,subjects,subj_tr_val_ind,subj_tst_ind):
     return result
 
 if __name__ == '__main__':
+    set_seed(0)
     if not os.path.exists(RESULTS_DIR):
         os.makedirs(RESULTS_DIR)
 

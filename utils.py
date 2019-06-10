@@ -12,7 +12,16 @@ import matplotlib.pyplot as plt
 import operator
 import shutil
 import sys
+import random
+import tensorflow as tf
 
+
+def set_seed(seed_value = 0):
+    ''' Set detereministic seed'''
+    os.environ['PYTHONHASHSEED'] = str(seed_value)
+    random.seed(seed_value)
+    np.random.seed(seed_value)
+    tf.set_random_seed(seed_value)
 
 def read_conifig():
     config = 'config.json'
