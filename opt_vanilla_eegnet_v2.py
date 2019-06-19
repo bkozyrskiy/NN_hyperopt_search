@@ -25,15 +25,18 @@ WEIGHTS_DIR = "weights_eegnet_v2_%s/" %config['opt_method']
 K.set_image_data_format("channels_first")
 
 
-hp_space = {'resample_to' : hp.choice('resample_to', range(128,501)),
-        'regRate': hp.loguniform('regRate', -6*np.log(10), -3*np.log(10)),
+# hp_space = {'resample_to' : hp.choice('resample_to', range(128,501)),
+#         'regRate': hp.loguniform('regRate', -6*np.log(10), -3*np.log(10)),
+#         'dropoutRate1': hp.uniform('dropoutRate0',0,1),
+#         'dropoutRate2': hp.uniform('dropoutRate1',0,1),
+#         'dropoutRate3': hp.uniform('dropoutRate2',0,1),
+#         'filtNumLayer1': hp.choice('filtNumLayer1',[4,8,16,24,32]),
+#         'filtNumLayer2': hp.choice('filtNumLayer2',[4,8,16,24,32]),
+#         'filtNumLayer3': hp.choice('filtNumLayer3',[4,8,16,24,32]),
+#         'lr' : hp.loguniform('lr', -6*np.log(10), -3*np.log(10))
+# }
+hp_space = {
         'dropoutRate1': hp.uniform('dropoutRate0',0,1),
-        'dropoutRate2': hp.uniform('dropoutRate1',0,1),
-        'dropoutRate3': hp.uniform('dropoutRate2',0,1),
-        'filtNumLayer1': hp.choice('filtNumLayer1',[4,8,16,24,32]),
-        'filtNumLayer2': hp.choice('filtNumLayer2',[4,8,16,24,32]),
-        'filtNumLayer3': hp.choice('filtNumLayer3',[4,8,16,24,32]),
-        'lr' : hp.loguniform('lr', -6*np.log(10), -3*np.log(10))
 }
 
 gp_space = [{'name':'resample_to','type':'discrete', 'domain': (128,501)},
@@ -105,13 +108,13 @@ if __name__ == '__main__':
         os.makedirs(WEIGHTS_DIR)
     data = DataBuildClassifier('%s/NewData' %DATA_FOLDER)
 
-    subjects, subj_tr_val_ind, subj_tst_ind = get_subj_split(data, subj_numbers = [25, 26, 27, 28, 29, 30, 32, 33, 34, 35, 36, 37, 38])
+    subjects, subj_tr_val_ind, subj_tst_ind = get_subj_split(data, subj_numbers = config['subjects'])
     # split_subj = lambda x, ind: {key: (x[key][0][ind[key]], x[key][1][ind[key]]) for key in x}
     # subj_train_val = split_subj(subjects,subj_tr_val_ind)
     # subj_test = split_subj(subjects, subj_tst_ind)
     if config['opt_method'] == 'hyperopt':
-        for t in range(config['runs']):
+        for t in range(config['optimizer_steps']):
             run_a_trial_hp(subjects, subj_tr_val_ind, subj_tst_ind, RESULTS_DIR, build_and_train_all_subjects, hp_space)
     if config['opt_method'] == 'gpyopt':
         clear_res_weight_dir(RESULTS_DIR, WEIGHTS_DIR)
-        run_gp(subjects, subj_tr_val_ind, subj_tst_ind, build_and_train_all_subjects, gp_space, noise_var=0.05, max_iter=config['runs'])
+        run_gp(subjects, subj_tr_val_ind, subj_tst_ind, build_and_train_all_subjects, gp_space, noise_var=0.05, max_iter=config['optimizer_steps'])
