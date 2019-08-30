@@ -51,7 +51,7 @@ gp_space = [{'name':'resample_to','type':'discrete', 'domain': (128,501)},
 
 
 
-def build_and_train_all_subjects(params,subjects,subj_tr_val_ind,subj_tst_ind):
+def build_and_train_per_subject(params,subjects,subj_tr_val_ind,subj_tst_ind):
     print(params)
     params_uuid = str(uuid.uuid4())[:5]
     subj_val_aucs,subj_tst_aucs_ens,subj_tst_aucs_naive = {},{},{}
@@ -114,7 +114,7 @@ if __name__ == '__main__':
     # subj_test = split_subj(subjects, subj_tst_ind)
     if config['opt_method'] == 'hyperopt':
         for t in range(config['optimizer_steps']):
-            run_a_trial_hp(subjects, subj_tr_val_ind, subj_tst_ind, RESULTS_DIR, build_and_train_all_subjects, hp_space)
+            run_a_trial_hp(subjects, subj_tr_val_ind, subj_tst_ind, RESULTS_DIR, build_and_train_per_subject, hp_space)
     if config['opt_method'] == 'gpyopt':
         clear_res_weight_dir(RESULTS_DIR, WEIGHTS_DIR)
-        run_gp(subjects, subj_tr_val_ind, subj_tst_ind, build_and_train_all_subjects, gp_space, noise_var=0.05, max_iter=config['optimizer_steps'])
+        run_gp(subjects, subj_tr_val_ind, subj_tst_ind, build_and_train_per_subject, gp_space, noise_var=0.05, max_iter=config['optimizer_steps'])

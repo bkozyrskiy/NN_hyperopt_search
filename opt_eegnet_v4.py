@@ -25,18 +25,21 @@ WEIGHTS_DIR = "weights_eegnet_v4/"
 K.set_image_data_format("channels_first")
 
 
-space ={'resample_to' : hp.choice('resample_to', range(60,500)),
+space ={'resample_to' : hp.choice('resample_to', range(128,129)),
         'dropoutRate1': hp.uniform('dropoutRate0',0,1),
         'dropoutRate2': hp.uniform('dropoutRate1',0,1),
         'F1': hp.choice('F1',range(4,13)),
         'D': hp.choice('D',range(1,4)),
         'norm_rate': hp.uniform('norm_rate',0.25,1.0),
-        'time_filter_lenght': hp.choice('time_filter_lenght',range(60,121)), #in milliseconds
+        'time_filter_lenght': hp.choice('time_filter_lenght',range(25,121)), #in milliseconds
         'lr' : hp.loguniform('lr', -6*np.log(10), -3*np.log(10))
 }
 
+def build_and_train_subject_heap(params,subjects,subj_tr_val_ind,subj_tst_ind):
+    params_uuid = str(uuid.uuid4())[:5]
 
-def build_and_train_all_subjects(params,subjects,subj_tr_val_ind,subj_tst_ind):
+
+def build_and_train_per_subject(params,subjects,subj_tr_val_ind,subj_tst_ind):
     params_uuid = str(uuid.uuid4())[:5]
     subj_val_aucs,subj_tst_aucs_ens,subj_tst_aucs_naive = {},{},{}
     tmp_weights_res_path = os.path.join(WEIGHTS_DIR,params_uuid)
@@ -107,6 +110,6 @@ if __name__ == '__main__':
     # subj_test = split_subj(subjects, subj_tst_ind)
     if config['opt_method'] == 'hyperopt':
         for t in range(config['optimizer_steps']):
-            run_a_trial_hp(subjects, subj_tr_val_ind, subj_tst_ind, RESULTS_DIR, build_and_train_all_subjects, space)
+            run_a_trial_hp(subjects, subj_tr_val_ind, subj_tst_ind, RESULTS_DIR, build_and_train_per_subject, space)
     if config['opt_method'] == 'gpyopt':
         raise NotImplementedError

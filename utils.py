@@ -99,6 +99,13 @@ def get_subj_split(data,subj_numbers):
 
     return subjects, subj_tr_val_ind, subj_tst_ind
 
+# def get_heap_subj_split(data,subj_numbers):
+#     subjects = data.get_data(subj_numbers, shuffle=False, windows=[(0.2, 0.5)], baseline_window=(0.2, 0.3))
+#     for subj in subj_numbers:
+#         X,y =
+
+
+
 def single_auc_loging(history,title,path_to_save):
     """
     Function for ploting nn-classifier performance. It makes two subplots.
